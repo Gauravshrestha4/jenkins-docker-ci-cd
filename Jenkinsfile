@@ -11,13 +11,18 @@ node {
     }
 
     stage('Push image') {
+	    
 	// Push the image
-	// sh 'scp sample-app.tar root@example.com:/root'
-	// Stop the running container
-	// Remove the running container
-	// Remove the current image
+	sh 'scp sample-app.tar root@example.com:/root'
+	
+	// Stop the running container & Remove the running container & Remove the current image
+	sh 'ssh root@192.168.1.1 "docker stop sample-app && docker rm sample-app && docker rmi sample-app"'
+	    
 	// Load the new image
+	sh 'ssh root@192.168.1.1 "docker load -i dynamo-frontend.tar"'
+	    
 	// Run the container
+	sh 'ssh root@192.168.1.1 "docker run sample-app -d 80:80"'    
     }
 
     stage('Remove image from Jenkins') {
