@@ -21,6 +21,7 @@ node {
     }
 
     stage('Remove image from Jenkins') {
+	  sh 'rm sample-app.tar'  
 	  sh 'docker rmi sample-app'  
     }
 }
