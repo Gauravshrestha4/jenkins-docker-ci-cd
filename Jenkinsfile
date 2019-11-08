@@ -7,12 +7,12 @@ node {
 
     stage('Build image') {	    
 	sh 'docker build -t sample-app .'
-	sh 'docker save -o sample-app.tar'	    
+	sh 'docker save -o sample-app.tar sample-app'	    
     }
 
     stage('Push image') {
 	// Push the image
-	sh 'scp sample-app.tar root@example.com:/root'
+	// sh 'scp sample-app.tar root@example.com:/root'
 	// Stop the running container
 	// Remove the running container
 	// Remove the current image
@@ -21,6 +21,6 @@ node {
     }
 
     stage('Remove image from Jenkins') {
-	    
+	  sh 'docker rmi sample-app'  
     }
 }
