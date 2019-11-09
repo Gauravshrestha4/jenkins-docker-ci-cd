@@ -19,7 +19,7 @@ node {
 	// sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker stop sample-app && docker rm sample-app && docker rmi sample-app'
 	    
 	// Load the new image
-	sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker load -i dynamo-frontend.tar'
+	sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker load -i sample-app.tar'
 	    
 	// Run the container
 	sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker run sample-app -d 80:80'    
