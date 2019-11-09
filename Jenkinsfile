@@ -15,8 +15,14 @@ node {
 	// Push the image
 	sh 'scp -o StrictHostKeyChecking=No sample-app.tar root@139.162.88.122:/root'
 	
-	// Stop the running container & Remove the running container & Remove the current image
-	 sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker stop sample-container && docker rm sample-container && docker rmi sample-app'
+	// Stop the running container
+	sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker stop sample-container'
+	    
+	// Remove the running container   
+	sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker rm sample-container'
+	
+	// Remove the current image 
+	sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker rmi sample-app'
 	    
 	// Load the new image
 	sh 'ssh -o StrictHostKeyChecking=No root@139.162.88.122 docker load -i sample-app.tar'
