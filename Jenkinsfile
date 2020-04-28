@@ -4,42 +4,45 @@ node {
         checkout scm
     }
 
-    stage('Build image') {	 
-
-        // Build the docker image with the tag "sample-app"
-	sh 'docker build -t sample-app .'
-
-        // Export the docker image as sample-app.tar file
-	sh 'docker save -o sample-app.tar sample-app:latest'	    
+    stage('Build Image') {
+      steps {
+        sh "docker build -t sample-app:${BUILD_NUMBER} ."
+        sh "docker tag sample-app:${BUILD_NUMBER} <docker_username>/sample-app:${BUILD_NUMBER}"
+      }
+    }
+	
+     stage('Push Docker Image to Registry') {
+       steps {
+         withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USER')]) {
+           sh "docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}"
+         }
+         sh "docker push <docker_username>/sample-app:${BUILD_NUMBER}"
+        }
     }
 
-    stage('Push image') {
-	    
-        // Push the image
-        sh 'scp -o StrictHostKeyChecking=No sample-app.tar root@your_host_ip:/root'
-        
+    stage('Deploy image') {
+	   
         // Stop the running container
         sh 'ssh -o StrictHostKeyChecking=No root@your_host_ip docker stop sample-container'
             
         // Remove the running container   
         sh 'ssh -o StrictHostKeyChecking=No root@your_host_ip docker rm sample-container'
         
-        // Remove the current image 
-        sh 'ssh -o StrictHostKeyChecking=No root@your_host_ip docker rmi sample-app'
-            
-        // Load the new image
-        sh 'ssh -o StrictHostKeyChecking=No root@your_host_ip docker load -i sample-app.tar'
-            
+	// Docker Login
+	withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USER')]) {
+           sh "ssh -o StrictHostKeyChecking=No root@your_host_ip docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}"
+        }
+	    
+        // Pull latest the image
+        sh 'ssh -o StrictHostKeyChecking=No root@your_host_ip docker pull <docker_username>/sample-app:${BUILD_NUMBER}'
+	    
         // Run the container
-        sh 'ssh -o StrictHostKeyChecking=No root@your_host_ip docker run -d --name sample-container -p 80:80 --restart=always sample-app'    
+        sh 'ssh -o StrictHostKeyChecking=No root@your_host_ip docker run -d --name sample-container -p 80:80 --restart=always <docker_username>/sample-app:${BUILD_NUMBER}'    
     }
 
-    stage('Remove image from Jenkins') {
-
-        // Remove the exported file
-        sh 'rm sample-app.tar'
-
-        // Remove the docker image from Jenkins server 
-        sh 'docker rmi sample-app'  
+    post {
+      always {
+        deleteDir()
+      }
     }
 }
